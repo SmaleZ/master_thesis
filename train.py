@@ -26,3 +26,5 @@ env = DIAYN_Skill_Wrapper(env, num_skills=num_skills)
 # print(env.observation_space)
 agent = SAC("MlpPolicy", env, verbose=1, tensorboard_log="./tensorboard").learn(total_timesteps=total_timesteps)
 agent.save("sac_Walker2DMuJoCoEnv-v0")
+
+# test git
