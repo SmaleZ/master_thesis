@@ -17,7 +17,7 @@ env = DIAYN_Skill_Wrapper(env, num_skills=num_skills)
 # #check_env(env)
 # obs = env.reset()
 # env = gym.make('Walker2DMuJoCoEnv-v0')
-n_steps = 1000
+n_steps = 10
 obs = env.reset()
 done = False
 for _ in range(n_steps):
@@ -25,7 +25,8 @@ for _ in range(n_steps):
     if not done:
         action = env.action_space.sample()
         obs, reward, done, info = env.step(action)
-        print(reward)
+        print("shape of observation", obs.shape)
+        print("current action:", env.action_space)
     else:
         print("has done")
     # action = env.action_space.sample()
