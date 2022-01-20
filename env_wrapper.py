@@ -101,7 +101,7 @@ class DIAYN_Skill_Wrapper(Wrapper):
 
         # 在原本的狀態維度多加一個維度代表skill
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.state_size + 1,), dtype=np.float32)
-
+        # try to add logger
         self.summary_logdir = os.path.join("logs", "disc_p_mnist", datetime.now().strftime('%b%d_%H-%M-%S'))
         self.writer = SummaryWriter(self.summary_logdir)
         self.logger = configure(folder='./tensorboard/discriminator', format_strings=["tensorboard"])
