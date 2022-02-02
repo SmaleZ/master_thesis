@@ -14,10 +14,16 @@ import time
 # env.init(xml, 9000)
 # # print("before wrapper")
 # #print(env.observation_space.shape)
-total_timesteps = 5000
+total_timesteps = 5
 num_skills = 3
 
-env = gym.make('Walker2DMuJoCoEnv-v0')
+# env = gym.make('Walker2DMuJoCoEnv-v0')
+# env = gym.make('MountainCarContinuous-v0')
+# env = gym.make('InvertedPendulum-v2')
+# env = gym.make('HalfCheetah-v2')
+# env = gym.make('Walker2d-v3')
+# env = gym.make('Ant-v2')
+env = gym.make('Humanoid-v2')
 # env = gym.make("MineRLNavigateDense-v0")
 env = DIAYN_Skill_Wrapper(env, num_skills=num_skills)
 # env = DummyVecEnv([lambda: env])
