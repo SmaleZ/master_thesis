@@ -29,11 +29,7 @@ env = DIAYN_Skill_Wrapper(env, num_skills=num_skills)
 # env = DummyVecEnv([lambda: env])
 env = DummyVecEnv([lambda: env])
 normalized_vec_env = VecNormalize(env)
-# print(env.action_space)
-# print("affter wrapper")
-# print("obs shape:")
-# print(env.observation_space.shape)
-# print(env.observation_space)
+
 agent = SAC("MlpPolicy", normalized_vec_env, verbose=1, tensorboard_log="./tensorboard").learn(total_timesteps=total_timesteps)
 agent.save("sac_Walker2DMuJoCoEnv-v0")
 
