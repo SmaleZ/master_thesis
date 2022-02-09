@@ -136,8 +136,8 @@ class DiscriminativeVCL(nn.Module):
         # set the value of the head prior to be the current value of the posterior
         (head_prior_w_means, head_prior_w_log_vars), (head_prior_b_means, head_prior_b_log_vars) = self.head_prior
         (head_posterior_w_means, head_posterior_w_log_vars), (head_posterior_b_means, head_posterior_b_log_vars) = self.head_posterior
-        print("the current task id is:{}".format(head))
-        print("the length of the list is:{}".format(len(head_prior_w_means)))
+        # print("the current task id is:{}".format(head))
+        # print("the length of the list is:{}".format(len(head_prior_w_means)))
         head_prior_w_means[head].data.copy_(head_posterior_w_means[head].data)
         head_prior_w_log_vars[head].data.copy_(head_posterior_w_log_vars[head].data)
         head_prior_b_means[head].data.copy_(head_posterior_b_means[head].data)

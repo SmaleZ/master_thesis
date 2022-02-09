@@ -41,6 +41,7 @@ class DIAYN_Skill_Wrapper(Wrapper):
     def __init__(self, env, num_skills):
         Wrapper.__init__(self, env)
         self.num_skills = num_skills
+        self.skill = random.randint(0, self.num_skills - 1)
         # print(env.observation_space['pov'].shape)
         self.state_size = env.observation_space.shape[0]
         print("the shape of observation is : {}".format(env.observation_space.shape))
@@ -123,6 +124,7 @@ class DIAYN_VIC_Skill_Wrapper(Wrapper):
     def __init__(self, env, num_skills):
         Wrapper.__init__(self, env)
         self.num_skills = num_skills
+        self.skill = random.randint(0, self.num_skills - 1)
         # print(env.observation_space['pov'].shape)
         self.state_size = env.observation_space.shape[0]
         print("the shape of observation is : {}".format(env.observation_space.shape))
@@ -173,16 +175,16 @@ class DIAYN_VIC_Skill_Wrapper(Wrapper):
         new_reward, discriminator_outputs = self.calculate_new_reward(next_state, 0)
 
         # discriminator 學習預測正確的skill
-        self.discriminator_learn(self.skill, discriminator_outputs)
+        self.disciminator_learn(self.skill, discriminator_outputs, next_state, 0)
 
         return self.observation(next_state), new_reward, done, _
 
     def calculate_new_reward(self, next_state, head):
         # 取得disciminator輸出以及在正確skill上的數值
-        probability_correct_skill, disciminator_outputs = self.get_predicted_probability_of_skill(self.skill,
-                                                                                                  next_state)
         # probability_correct_skill, disciminator_outputs = self.get_predicted_probability_of_skill(self.skill,
-        #                                                                                           next_state, head)
+        #                                                                                           next_state)
+        probability_correct_skill, disciminator_outputs = self.get_predicted_probability_of_skill(self.skill,
+                                                                                                  next_state, head)
         # 獎勵計算方式參考原始論文
         new_reward = np.log(probability_correct_skill + 1e-8) - np.log(self.prior_probability_of_skill)
         return new_reward, disciminator_outputs
@@ -197,7 +199,7 @@ class DIAYN_VIC_Skill_Wrapper(Wrapper):
         :return:
         """
         optimizer = self.discriminator_optimizer
-
+        optimizer.zero_grad()
         head = task_idx if MULTIHEADED else 0
 
         x = torch.Tensor(np.array(next_state)).unsqueeze(0)
@@ -206,7 +208,7 @@ class DIAYN_VIC_Skill_Wrapper(Wrapper):
         y_true = y_true.to(device)
 
         loss = self.discriminator.vcl_loss(x, y_true, head, TRAIN_NUM_SAMPLES)
-
+        
         loss.backward()
         optimizer.step()
 
