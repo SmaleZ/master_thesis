@@ -6,9 +6,9 @@ import numpy as np
 import argparse
 
 # total_training_timesteps = [10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000]
-total_training_timesteps = [500000]
+# total_training_timesteps = [500000]
 # total_training_timesteps = [15000]
-total_training_timesteps = [1000000, 2000000, 3000000]
+# total_training_timesteps = [1000000, 2000000, 3000000]
 # total_training_timesteps = [1000000]
 # total_training_timesteps = [400000]
 num_skills = 50
@@ -29,6 +29,9 @@ def parse_args():
     parser.add_argument('--env_name',
                         type=str,
                         default='MountainCarContinuous-v0')
+    parser.add_argument('--total_timestep',
+                        type=int,
+                        default=1000000)
     parser.add_argument('--agent_path',
                         type=str,
                         default=None)
@@ -39,28 +42,31 @@ def parse_args():
 # env_names = ['InvertedPendulum-v2']
 # env = gym.make('MountainCarContinuous-v0')
 # env = gym.make('InvertedPendulum-v2')
-def train(num_skills, total_training_timesteps, env_names):
-    for env_name in env_names:
-        env = gym.make(env_name)
-        env = DIAYN_Skill_Wrapper(env, num_skills=num_skills)
-        # env = DummyVecEnv([lambda: env])
-        # normalized_vec_env = VecNormalize(env)
-        for total_training_timestep in total_training_timesteps:
-            agent = SAC("MlpPolicy", env, verbose=1, tensorboard_log="./tensorboard").learn(
-                total_timesteps=total_training_timestep)
-            agent.save("trainedmodel/{}-{}".format(env_name, total_training_timestep))
+def train(num_skills, total_training_timestep, env_name):
+    # for env_name in env_names:
+    #     env = gym.make(env_name)
+    #     env = DIAYN_Skill_Wrapper(env, num_skills=num_skills)
+    #     # env = DummyVecEnv([lambda: env])
+    #     # normalized_vec_env = VecNormalize(env)
+    #     for total_training_timestep in total_training_timesteps:
+    #         agent = SAC("MlpPolicy", env, verbose=1, tensorboard_log="./tensorboard").learn(
+    #             total_timesteps=total_training_timestep)
+    #         agent.save("trainedmodel/{}-{}".format(env_name, total_training_timestep))
+    env = gym.make(env_name)
+    env = DIAYN_Skill_Wrapper(env, num_skills)
+    agent = SAC("MlpPolicy", env, verbose=1, tensorboard_log="./tensorboard").learn(
+        total_timesteps=total_training_timestep)
+    agent.save("trainedmodel/{}-{}".format(env_name, total_training_timestep))
 
 
-def train_vcl(num_skills, total_training_timesteps, env_names):
-    for env_name in env_names:
-        env = gym.make(env_name)
-        env = DIAYN_VIC_Skill_Wrapper(env, num_skills=num_skills)
-        # env = DummyVecEnv([lambda: env])
-        # normalized_vec_env = VecNormalize(env)
-        for total_training_timestep in total_training_timesteps:
-            agent = SAC("MlpPolicy", env, verbose=1, tensorboard_log="./tensorboard").learn(
-                total_timesteps=total_training_timestep)
-            agent.save("trainedmodel/DIAYN_VCL-{}-{}".format(env_name, total_training_timestep))
+def train_vcl(num_skills, total_training_timestep, env_name):
+    env = gym.make(env_name)
+    env = DIAYN_VIC_Skill_Wrapper(env, num_skills=num_skills)
+    # env = DummyVecEnv([lambda: env])
+    # normalized_vec_env = VecNormalize(env)
+    agent = SAC("MlpPolicy", env, verbose=1, tensorboard_log="./tensorboard").learn(
+        total_timesteps=total_training_timestep)
+    agent.save("trainedmodel/DIAYN_VCL-{}-{}".format(env_name, total_training_timestep))
 
 
 def eval(num_skills, env_name, agent_path):
@@ -138,9 +144,9 @@ def view(num_skills, env_name, agent_path):
 def run_experiments(args):
     mode = args.mode
     if mode == 'train':
-        train(num_skills=num_skills, total_training_timesteps=total_training_timesteps, env_names=env_names)
+        train(num_skills=num_skills, total_training_timestep=args.total_timestep, env_name=args.env_name)
     elif mode == 'train_vcl':
-        train_vcl(num_skills, total_training_timesteps, env_names)
+        train_vcl(num_skills, total_training_timestep=args.total_timestep, env_name=args.env_name)
     elif mode == 'eval':
         eval(num_skills, args.env_name, args.agent_path)
     else:
