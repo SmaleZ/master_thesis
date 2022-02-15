@@ -95,7 +95,7 @@ def plot_stack_distribution_mcc():
     # epochs = ['100000', '250000', '500000', '750000', '1000000']
     epochs = ['1000','50000', '100000', '200000', '300000', '400000']
     for epoch in epochs:
-        model = SAC.load('trainedmodel/MountainCarContinuous-v0-'+epoch+'.zip')
+        model = SAC.load('trainedmodel/DIAYN_VCL-MountainCarContinuous-v0-'+epoch+'.zip')
         level1_reward = 0
         level2_reward = 0
         level3_reward = 0
