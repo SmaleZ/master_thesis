@@ -81,7 +81,7 @@ def eval(num_skills, env_name, agent_path):
         done = False
         episode_reward = []
         obs = env.reset()
-
+        action = env.action_space.sample()
         while not done:
             action, _state = model.predict(obs, deterministic=True)
             obs, reward, done, _ = env.step(action)
