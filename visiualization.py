@@ -146,11 +146,11 @@ def plot_stack_distribution_mcc():
     plt.show()
 
 def plot_hist():
-    model = SAC.load('trainedmodel/InvertedPendulum-v2-100000.zip')
+    model = SAC.load('trainedmodel/DIAYN_VCL-HalfCheetah-v2-750000.zip')
     # print(env.observation_space.shape)
     skill_reward = []
     for skill_idx in range(50):
-        env = gym.make('InvertedPendulum-v2')
+        env = gym.make('HalfCheetah-v2')
         env = DIAYN_Test_Wrapper(env, skill_idx=skill_idx)
         # print(skill_idx)
         # print(env.observation_space.shape)
@@ -172,6 +172,6 @@ def plot_hist():
     plt.xlabel('rewards')
     plt.show()
 
-# plot_hist()
+plot_hist()
 # plot_stack_distribution()
-plot_stack_distribution_mcc()
+# plot_stack_distribution_mcc()
