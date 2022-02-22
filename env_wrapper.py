@@ -23,7 +23,7 @@ INITIAL_POSTERIOR_VAR = 1e-3
 
 N_CLASSES = 10
 LAYER_WIDTH = 100
-N_HIDDEN_LAYERS = 2
+N_HIDDEN_LAYERS = 3 # bigger net for complex env
 N_TASKS = 3
 TASK_SIZE = 100
 MULTIHEADED = False
@@ -50,7 +50,7 @@ class DIAYN_Skill_Wrapper(Wrapper):
         self.hidden_size = 128
         # discriminator負責state到skill的映射
         self.discriminator = NN(input_dim=self.state_size,
-                                layers_info=[self.hidden_size, self.hidden_size, self.num_skills],
+                                layers_info=[self.hidden_size, self.hidden_size, self.hidden_size, self.num_skills],
                                 hidden_activations="relu",
                                 output_activation='none',
                                 )
@@ -130,7 +130,8 @@ class DIAYN_VIC_Skill_Wrapper(Wrapper):
         print("the shape of observation is : {}".format(env.observation_space.shape))
         # self.state_size = env.observation_space.shape[0] * env.observation_space.shape[1] * env.observation_space.shape[
         #     2]
-        self.hidden_size = 100
+        # self.hidden_size = 100
+        self.hidden_size = 128
         # record the curr iteration for variational uodate, every 100 steps there is a update
         self.curr_steps = 0
         # record the curr tasks for variational uodate, there are total 10 different ceil/tasks/head for

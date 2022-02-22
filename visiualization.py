@@ -19,11 +19,11 @@ import numpy as np
 # plt.plot(time_steps, losses)
 # plt.show()
 def plot_distribution():
-    model = SAC.load('trainedmodel/Hopper-v3-250000.zip')
+    model = SAC.load('trainedmodel/HalfCheetah-v2-100000.zip')
     # print(env.observation_space.shape)
     skill_reward = []
     for skill_idx in range(50):
-        env = gym.make('Hopper-v3')
+        env = gym.make('HalfCheetah-v2')
         env = DIAYN_Test_Wrapper(env, skill_idx=skill_idx)
         # print(skill_idx)
         # print(env.observation_space.shape)
@@ -49,14 +49,14 @@ def plot_stack_distribution():
     # model = SAC.load('trainedmodel/InvertedPendulum-v2-400000.zip')
     small_rewards = []
     big_rewards = []
-    # epochs = ['100000', '250000', '500000', '750000', '1000000']
-    epochs = ['1000','50000', '100000', '200000', '300000', '400000']
+    epochs = ['100000', '250000', '500000', '750000', '1000000']
+    # epochs = ['1000','50000', '100000', '200000', '300000', '400000']
     for epoch in epochs:
-        model = SAC.load('trainedmodel/DIAYN_VCL-InvertedPendulum-v2-'+epoch+'.zip')
+        model = SAC.load('trainedmodel/HalfCheetah-v2-'+epoch+'.zip')
         small_reward = 0
         big_reward = 0
         for skill_idx in range(50):
-            env = gym.make('InvertedPendulum-v2')
+            env = gym.make('HalfCheetah-v2')
             env = DIAYN_Test_Wrapper(env, skill_idx=skill_idx)
             # print(skill_idx)
             # print(env.observation_space.shape)
@@ -69,9 +69,9 @@ def plot_stack_distribution():
                 obs, reward, done, _ = env.step(action)
                 episode_reward.append(reward)
             env.close()
-            if np.sum(episode_reward) < 500:
+            if np.sum(episode_reward) < 0:
                 small_reward += 1
-            elif np.sum(episode_reward) >= 500:
+            elif np.sum(episode_reward) >= 0:
                 big_reward += 1
             print("the choosen skill : {} 's reward is : {}".format(skill_idx, np.sum(episode_reward)))
         small_rewards.append(small_reward)
@@ -146,7 +146,7 @@ def plot_stack_distribution_mcc():
     plt.show()
 
 def plot_hist():
-    model = SAC.load('trainedmodel/DIAYN_VCL-HalfCheetah-v2-750000.zip')
+    model = SAC.load('trainedmodel/HalfCheetah-v2-250000.zip')
     # print(env.observation_space.shape)
     skill_reward = []
     for skill_idx in range(50):
