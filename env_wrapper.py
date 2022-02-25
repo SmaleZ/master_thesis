@@ -36,11 +36,34 @@ TRAIN_NUM_SAMPLES = 10
 device = torch.device("cpu")
 print("Running on device", device)
 
+class DIAYN_Pretrained_Wrapper(Wrapper):
+    def __init__(self, env, skill_choosen):
+        Wrapper.__init__(self, env)
+        self.skill_choosen = skill_choosen
+        self.state_size = env.observation_space.shape[0]
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.state_size + 1,), dtype=np.float32)
+
+    def reset(self, **kwargs):
+        # 一個skill
+        observation = self.env.reset(**kwargs)
+        return self.observation(observation)
+
+    def observation(self, observation):
+        # 狀態跟skill組合起來返回
+        return np.concatenate((np.array(observation), np.array([self.skill_choosen])))
+
+    def step(self, action):
+        next_state, reward, done, _ = self.env.step(action)
+        return self.observation(next_state), reward, done, _
+
 
 class DIAYN_Skill_Wrapper(Wrapper):
-    def __init__(self, env, num_skills):
+    def __init__(self, env, num_skills, total_unsupervised_steps, total_steps):
         Wrapper.__init__(self, env)
         self.num_skills = num_skills
+        self.total_unsupervised_steps = total_unsupervised_steps
+        self.total_supervised_steps = total_steps - total_unsupervised_steps
+        self.current_step = 0
         self.skill = random.randint(0, self.num_skills - 1)
         # print(env.observation_space['pov'].shape)
         self.state_size = env.observation_space.shape[0]
@@ -50,7 +73,8 @@ class DIAYN_Skill_Wrapper(Wrapper):
         self.hidden_size = 128
         # discriminator負責state到skill的映射
         self.discriminator = NN(input_dim=self.state_size,
-                                layers_info=[self.hidden_size, self.hidden_size, self.hidden_size, self.num_skills],
+                                # layers_info=[self.hidden_size, self.hidden_size, self.hidden_size, self.num_skills],
+                                layers_info=[self.hidden_size, self.hidden_size, self.num_skills],
                                 hidden_activations="relu",
                                 output_activation='none',
                                 )
@@ -67,7 +91,10 @@ class DIAYN_Skill_Wrapper(Wrapper):
     def reset(self, **kwargs):
         # 一個skill
         observation = self.env.reset(**kwargs)
-        self.skill = random.randint(0, self.num_skills - 1)
+        if self.current_step <= self.total_unsupervised_steps:
+            self.skill = random.randint(0, self.num_skills - 1)
+        else:
+            self.skill = 3 # need human choose or meta-controller
         return self.observation(observation)
 
     def observation(self, observation):
@@ -79,21 +106,25 @@ class DIAYN_Skill_Wrapper(Wrapper):
         # print("the current action we choose is :")
         # print(action)
         # 這裡不使用原生reward
-        next_state, _, done, _ = self.env.step(action)
 
+        next_state, reward, done, _ = self.env.step(action)
+        if self.current_step <= self.total_unsupervised_steps:
+            new_reward, discriminator_outputs = self.calculate_new_reward(next_state)
+            reward = new_reward
+            self.discriminator_learn(self.skill, discriminator_outputs)
+            if self.current_step == self.total_unsupervised_steps:
+                print("pretraing finished")
         # print("obs shape:")
         # print(next_state.shape)
         # 使用一種技巧計算reward
-        new_reward, discriminator_outputs = self.calculate_new_reward(next_state)
+        # new_reward, discriminator_outputs = self.calculate_new_reward(next_state)
         # new_reward, discriminator_outputs = self.calculate_new_reward(next_state, 0)
         # print("next_state is:", next_state)
         # print("the shape of obs is:", next_state.shape)
         # print("the pseudo reward is", new_reward)
         # discriminator 學習預測正確的skill
-
-        self.discriminator_learn(self.skill, discriminator_outputs)
-
-        return self.observation(next_state), new_reward, done, _
+        self.current_step += 1
+        return self.observation(next_state), reward, done, _
 
     def calculate_new_reward(self, next_state):
         probability_correct_skill, disciminator_outputs = self.get_predicted_probability_of_skill(self.skill,
