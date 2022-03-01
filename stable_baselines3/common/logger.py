@@ -337,7 +337,7 @@ class TensorBoardOutputFormat(KVWriter):
         self.writer = SummaryWriter(log_dir=folder)
 
     def write(self, key_values: Dict[str, Any], key_excluded: Dict[str, Union[str, Tuple[str, ...]]], step: int = 0) -> None:
-
+        # print(key_values.items())
         for (key, value), (_, excluded) in zip(sorted(key_values.items()), sorted(key_excluded.items())):
 
             if excluded is not None and "tensorboard" in excluded:

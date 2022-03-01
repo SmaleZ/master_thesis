@@ -238,7 +238,7 @@ class BaseAlgorithm(ABC):
     def _setup_model(self) -> None:
         """Create networks, buffer and optimizers."""
 
-    def set_logger(self, logger: Logger) -> None:
+    def set_logger(self,  logger: Logger) -> None:
         """
         Setter for for logger object.
 

@@ -58,11 +58,11 @@ class DIAYN_Pretrained_Wrapper(Wrapper):
 
 
 class DIAYN_Skill_Wrapper(Wrapper):
-    def __init__(self, env, num_skills, total_unsupervised_steps, total_steps):
+    def __init__(self, env, num_skills):
         Wrapper.__init__(self, env)
         self.num_skills = num_skills
-        self.total_unsupervised_steps = total_unsupervised_steps
-        self.total_supervised_steps = total_steps - total_unsupervised_steps
+        # self.total_unsupervised_steps = total_unsupervised_steps
+        # self.total_supervised_steps = total_steps - total_unsupervised_steps
         self.current_step = 0
         self.skill = random.randint(0, self.num_skills - 1)
         # print(env.observation_space['pov'].shape)
@@ -91,10 +91,11 @@ class DIAYN_Skill_Wrapper(Wrapper):
     def reset(self, **kwargs):
         # 一個skill
         observation = self.env.reset(**kwargs)
-        if self.current_step <= self.total_unsupervised_steps:
-            self.skill = random.randint(0, self.num_skills - 1)
-        else:
-            self.skill = 3 # need human choose or meta-controller
+        self.skill = random.randint(0, self.num_skills - 1)
+        # if self.current_step <= self.total_unsupervised_steps:
+        #     self.skill = random.randint(0, self.num_skills - 1)
+        # else:
+        #     self.skill = 3 # need human choose or meta-controller
         return self.observation(observation)
 
     def observation(self, observation):
@@ -108,12 +109,15 @@ class DIAYN_Skill_Wrapper(Wrapper):
         # 這裡不使用原生reward
 
         next_state, reward, done, _ = self.env.step(action)
-        if self.current_step <= self.total_unsupervised_steps:
-            new_reward, discriminator_outputs = self.calculate_new_reward(next_state)
-            reward = new_reward
-            self.discriminator_learn(self.skill, discriminator_outputs)
-            if self.current_step == self.total_unsupervised_steps:
-                print("pretraing finished")
+        new_reward, discriminator_outputs = self.calculate_new_reward(next_state)
+        reward = new_reward
+        self.discriminator_learn(self.skill, discriminator_outputs)
+        # if self.current_step <= self.total_unsupervised_steps:
+        #     new_reward, discriminator_outputs = self.calculate_new_reward(next_state)
+        #     reward = new_reward
+        #     self.discriminator_learn(self.skill, discriminator_outputs)
+        #     if self.current_step == self.total_unsupervised_steps:
+        #         print("pretraing finished")
         # print("obs shape:")
         # print(next_state.shape)
         # 使用一種技巧計算reward

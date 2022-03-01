@@ -14,9 +14,9 @@ import time
 # env.init(xml, 9000)
 # # print("before wrapper")
 # #print(env.observation_space.shape)
-total_timesteps = 5000
-total_unsupervised_steps = 5000
-total_supervised_steps = 10000
+total_timesteps = 50000
+total_unsupervised_steps = 50000
+total_supervised_steps = 200000
 num_skills = 10
 
 # env = gym.make('Walker2DMuJoCoEnv-v0')
@@ -27,16 +27,17 @@ env = gym.make('HalfCheetah-v2')
 # env = gym.make('Ant-v2')
 # env = gym.make('Humanoid-v2')
 # env = gym.make("MineRLNavigateDense-v0")
-pretrain_env = DIAYN_Skill_Wrapper(env, num_skills=num_skills, total_unsupervised_steps=total_unsupervised_steps, total_steps=total_timesteps)
+pretrain_env = DIAYN_Skill_Wrapper(env, num_skills=num_skills)
 # env = DummyVecEnv([lambda: env])
 # env = DummyVecEnv([lambda: env])
 # normalized_vec_env = VecNormalize(env)
 
-agent = SAC("MlpPolicy", pretrain_env, verbose=1, tensorboard_log="./tensorboard").learn(total_timesteps=total_timesteps)
-agent.save("test_diayn_initialization_halfcheetah")
-continuetrain_env = DIAYN_Pretrained_Wrapper(env, skill_choosen=3)
-continue_train_agent = agent.load("test_diayn_initialization_halfcheetah", env=continuetrain_env)
+# agent = SAC("MlpPolicy", pretrain_env, verbose=1, tensorboard_log="./tensorboard/test").learn(total_timesteps=total_timesteps)
+# agent.save("test_diayn_initialization_halfcheetah")
+continuetrain_env = DIAYN_Pretrained_Wrapper(env, skill_choosen=9)
+continue_train_agent = SAC.load("trainedmodel/pretrained_HalfCheetah-v2-100000.zip", env=continuetrain_env)
 continue_train_agent.learn(total_timesteps=total_supervised_steps)
-continue_train_agent.save("test_diayn_with_pretrained_parameters_halfcheetah")
+continutrained_path = "trainedmodel/continualtrained_{}-skill{}".format("HalfCheetah-v2", 9)
+continue_train_agent.save(continutrained_path)
 # test git
 # test commit
