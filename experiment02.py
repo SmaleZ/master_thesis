@@ -60,7 +60,7 @@ def train(num_skills, total_pretraining_timesteps, total_training_timesteps, env
     for i in range(num_skills):
         continutrained_env = DIAYN_Pretrained_Wrapper(skill_choosen=i, env=env)
         continutrained_agent = SAC.load(pretrained_agent_path, env=continutrained_env)
-        continutrained_path = "trainedmodel/continualtrained_{}-skill{}".format(env_name, i)
+        continutrained_path = "trainedmodel/continualtrained_{}-{}-skill{}".format(env_name, total_training_timesteps, i)
         continutrained_agent.learn(total_timesteps=total_training_timesteps)
         continutrained_agent.save(continutrained_path)
 
