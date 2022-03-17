@@ -34,9 +34,6 @@ def parse_args():
     return args
 
 
-
-
-
 def train(num_skills, total_pretraining_timesteps, total_training_timesteps, env_name):
     """
 
@@ -60,7 +57,37 @@ def train(num_skills, total_pretraining_timesteps, total_training_timesteps, env
     for i in range(num_skills):
         continutrained_env = DIAYN_Pretrained_Wrapper(skill_choosen=i, env=env)
         continutrained_agent = SAC.load(pretrained_agent_path, env=continutrained_env)
-        continutrained_path = "trainedmodel/continualtrained_{}-{}-skill{}".format(env_name, total_pretraining_timesteps, i)
+        continutrained_path = "trainedmodel/continualtrained_{}-{}-skill{}".format(env_name,
+                                                                                   total_pretraining_timesteps, i)
+        continutrained_agent.learn(total_timesteps=total_training_timesteps)
+        continutrained_agent.save(continutrained_path)
+
+
+def train_vcl(num_skills, total_pretraining_timesteps, total_training_timesteps, env_name):
+    """
+
+    :param num_skills: total number of skills
+    :param total_pretraining_timesteps:  timesteps of pretraining
+    :param total_training_timesteps: timesteps of continual training
+    :param env_name: the envirorment choosed
+    :return:
+    """
+    env = gym.make(env_name)
+    pretrained_env = DIAYN_VIC_Skill_Wrapper(env, num_skills)
+    pretrained_agent = SAC("MlpPolicy",
+                           pretrained_env,
+                           verbose=1,
+                           tensorboard_log="./tensorboard/VCL_pretrained_model-{}-{}".format(env_name,
+                                                                                             total_pretraining_timesteps)).learn(
+        total_timesteps=total_pretraining_timesteps)
+    pretrained_agent_path = "trainedmodel/VCL_pretrained_{}-{}".format(env_name, total_pretraining_timesteps)
+    pretrained_agent.save(pretrained_agent_path)
+
+    for i in range(num_skills):
+        continutrained_env = DIAYN_Pretrained_Wrapper(skill_choosen=i, env=env)
+        continutrained_agent = SAC.load(pretrained_agent_path, env=continutrained_env)
+        continutrained_path = "trainedmodel/VCL_continualtrained_{}-{}-skill{}".format(env_name,
+                                                                                       total_pretraining_timesteps, i)
         continutrained_agent.learn(total_timesteps=total_training_timesteps)
         continutrained_agent.save(continutrained_path)
 
@@ -74,6 +101,14 @@ def run_experiments(args):
             total_training_timesteps=args.total_training_timesteps,
             env_name=args.env_name
         )
+    elif mode == 'train_vcl':
+        train_vcl(
+            num_skills=args.num_skills,
+            total_pretraining_timesteps=args.total_pretraining_timesteps,
+            total_training_timesteps=args.total_training_timesteps,
+            env_name=args.env_name
+        )
+
 
 if __name__ == '__main__':
     args = parse_args()
