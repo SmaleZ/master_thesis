@@ -2,4 +2,5 @@
 DIAYN
 
 
-![image](https://github.com/skywalker0803r/DIAYN/blob/main/img/%E5%B0%8F%E4%BA%BA.gif)
+![image](https://github.com/SmaleZ/vcl_diayn/blob/master/results/video/Hopper-v3_1_500000.gif)
+![image](https://github.com/SmaleZ/vcl_diayn/blob/master/results/video/Hopper-v3_1_500000.gif)
