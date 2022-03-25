@@ -5,6 +5,9 @@ import gym
 from stable_baselines3 import SAC
 import seaborn as sns
 import numpy as np
+from video import VideoRecorder
+from pathlib import Path
+
 
 import argparse
 
@@ -20,7 +23,7 @@ import argparse
 # plt.plot(time_steps, losses)
 # plt.show()
 
-AVAILABLES_MODES = ['distribution', 'stack', 'hist', 'stack_mcc']
+AVAILABLES_MODES = ['distribution', 'stack', 'hist', 'stack_mcc', 'video']
 
 ENV_NAMES = {'MountainCarContinuous-v0': ['15000', '50000', '100000', '200000', '300000', '400000', '500000'],
              'InvertedPendulum-v2': ['50000', '100000', '200000', '300000', '400000'],
@@ -28,12 +31,14 @@ ENV_NAMES = {'MountainCarContinuous-v0': ['15000', '50000', '100000', '200000', 
              'HalfCheetah-v2': ['100000', '250000', '500000', '750000', '1000000'],
              'Ant-v2': ['100000', '250000', '500000', '750000', '1000000']}
 
+NUM_SKILLS = 50
+
 
 def plot_distribution():
     model = SAC.load('trainedmodel/HalfCheetah-v2-100000.zip')
     # print(env.observation_space.shape)
     skill_reward = []
-    for skill_idx in range(50):
+    for skill_idx in range(NUM_SKILLS):
         env = gym.make('HalfCheetah-v2')
         env = DIAYN_Test_Wrapper(env, skill_idx=skill_idx)
         # print(skill_idx)
@@ -77,7 +82,7 @@ def plot_stack_distribution(env_name, agent):
         level4_reward = 0
         level5_reward = 0
         level6_reward = 0
-        for skill_idx in range(50):
+        for skill_idx in range(NUM_SKILLS):
             env = gym.make(env_name)
             env = DIAYN_Test_Wrapper(env, skill_idx=skill_idx)
             # print(skill_idx)
@@ -121,7 +126,8 @@ def plot_stack_distribution(env_name, agent):
             bottom=np.array(level3_rewards) + np.array(level2_rewards) + np.array(level1_rewards),
             label="300 <= reward < 400")
     plt.bar(epochs, level5_rewards,
-            bottom=np.array(level3_rewards) + np.array(level2_rewards) + np.array(level1_rewards) + np.array(level4_rewards),
+            bottom=np.array(level3_rewards) + np.array(level2_rewards) + np.array(level1_rewards) + np.array(
+                level4_rewards),
             label="400 <= reward < 1000")
     plt.bar(epochs, level6_rewards,
             bottom=np.array(level3_rewards) + np.array(level2_rewards) + np.array(level1_rewards) + np.array(
@@ -137,7 +143,7 @@ def plot_stack_distribution(env_name, agent):
         plt.savefig(fname='results/DIAYN_VCL_' + 'training_dynamic_' + env_name + '.png')
     else:
         plt.title('DIAYN training dynamics on {}'.format(env_name))
-        plt.savefig(fname='results/'+ 'training_dynamic_' + env_name + '.png')
+        plt.savefig(fname='results/' + 'training_dynamic_' + env_name + '.png')
     plt.show()
 
 
@@ -158,7 +164,7 @@ def plot_stack_distribution_mcc(env_name, agent):
         level2_reward = 0
         level3_reward = 0
         level4_reward = 0
-        for skill_idx in range(50):
+        for skill_idx in range(NUM_SKILLS):
             env = gym.make(env_name)
             env = DIAYN_Test_Wrapper(env, skill_idx=skill_idx)
             # print(skill_idx)
@@ -208,7 +214,7 @@ def plot_stack_distribution_mcc(env_name, agent):
         plt.savefig(fname='results/DIAYN_VCL_' + 'training_dynamic_' + env_name + '.png')
     else:
         plt.title('DIAYN training dynamics on {}'.format(env_name))
-        plt.savefig(fname='results/'+ 'training_dynamic_' + env_name + '.png')
+        plt.savefig(fname='results/' + 'training_dynamic_' + env_name + '.png')
     plt.show()
 
 
@@ -231,7 +237,7 @@ def plot_hist(env_name, agent):
         # print(env.observation_space.shape)
         random_skill_reward = []
         skill_reward = []
-        for skill_idx in range(50):
+        for skill_idx in range(NUM_SKILLS):
             env = gym.make(env_name)
             env = DIAYN_Test_Wrapper(env, skill_idx=skill_idx)
             # print(skill_idx)
@@ -280,6 +286,32 @@ def plot_hist(env_name, agent):
         # plt.show()
 
 
+def record_video(env_name, agent, training_steps):
+    video_recorder = VideoRecorder(
+        Path('results/video'),
+        env_name,
+        camera_id=0)
+    if agent == 'DIAYN_VCL':
+        model = SAC.load('trainedmodel/{}-{}-{}.zip'.format(agent, env_name, training_steps))
+    else:
+        model = SAC.load('trainedmodel/{}-'.format(env_name) + training_steps + '.zip')
+
+    for skill_idx in range(NUM_SKILLS):
+        env = gym.make(env_name)
+        env = DIAYN_Test_Wrapper(env, skill_idx=skill_idx)
+        video_recorder.init(env)
+        done = False
+        obs = env.reset()
+        while not done:
+            action, _state = model.predict(obs, deterministic=True)
+
+            obs, reward, done, _ = env.step(action)
+
+            video_recorder.record(env)
+        env.close()
+        video_recorder.save(f'{env_name}_{skill_idx}_{training_steps}.gif')
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode',
@@ -312,6 +344,8 @@ def run_experiments(args):
         plot_hist(args.env_name, args.agent)
     elif mode == 'stack_mcc':
         plot_stack_distribution_mcc(args.env_name, args.agent)
+    elif mode == 'video':
+        record_video(args.env_name, args.agent, args.training_steps)
 
 if __name__ == '__main__':
     args = parse_args()
