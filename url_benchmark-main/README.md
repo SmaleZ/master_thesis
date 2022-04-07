@@ -1,3 +1,7 @@
+# DIAYN_VCL
+Using the baseline implemented by URLB, seeing below, we implemented our DIAYN_VCL: ./agent/diayn_vcl.py, diayn_vcl.yml 
+The experiments command are the same with what authors provided and you only need to change the attribute:'agent' with diayn_vcl. 
+
 # The Unsupervised Reinforcement Learning Benchmark (URLB)
 
 URLB provides a set of leading algorithms for unsupervised reinforcement learning where agents first pre-train without access to extrinsic rewards and then are finetuned to downstream tasks.
@@ -50,9 +54,12 @@ To run pre-training use the `pretrain.py` script
 ```sh
 python pretrain.py agent=icm domain=walker
 ```
-or, if you want to train a skill-based agent, like DIAYN, run:
+or, if you want to train a skill-based agent, like DIAYN, DIAYN_VCL run:
 ```sh
 python pretrain.py agent=diayn domain=walker
+```
+```sh
+python pretrain.py agent=diayn_vcl domain=walker
 ```
 This script will produce several agent snapshots after training for `100k`, `500k`, `1M`, and `2M` frames. The snapshots will be stored under the following directory:
 ```sh
@@ -72,9 +79,11 @@ This will load a snapshot stored in `./pretrained_models/states/walker/icm/snaps
 
 For methods that use skills, include the agent, and the `reward_free` tag to false.
 ```sh
-python finetune.py pretrained_agent=smm task=walker_run snapshot_ts=1000000 obs_type=states agent=smm reward_free=false
+python finetune.py agent=diayn task=walker_run snapshot_ts=1000000 obs_type=states agent=diayn reward_free=false
 ```
-
+```sh
+python finetune.py agent=diayn_vcl task=walker_run snapshot_ts=1000000 obs_type=states agent=diayn_vcl reward_free=false
+```
 ### Monitoring
 Logs are stored in the `exp_local` folder. To launch tensorboard run:
 ```sh
