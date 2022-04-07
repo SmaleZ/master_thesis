@@ -315,7 +315,7 @@ def record_video(env_name, agent, training_steps):
 def plot_training_curve(env_name):
     TSBOARD_SMOOTHING = 0.95
     for agent in ['random', 'diayn', 'diayn_vcl']:
-        df = pd.read_csv("{}_{}.csv".format(agent, env_name))
+        df = pd.read_csv("./results/{}_{}.csv".format(agent, env_name))
         plt.plot(df["Step"], df.ewm(alpha=(1 - TSBOARD_SMOOTHING)).mean()["Value"], label=agent)
         plt.grid(alpha=0.3)
     plt.xlabel("training steps", fontsize=10)
