@@ -7,8 +7,8 @@ import seaborn as sns
 import numpy as np
 from video import VideoRecorder
 from pathlib import Path
-
-
+from scipy.interpolate import make_interp_spline
+import pandas as pd
 import argparse
 
 # loss_file = open("train_loss.csv")
@@ -23,7 +23,7 @@ import argparse
 # plt.plot(time_steps, losses)
 # plt.show()
 
-AVAILABLES_MODES = ['distribution', 'stack', 'hist', 'stack_mcc', 'video']
+AVAILABLES_MODES = ['distribution', 'stack', 'hist', 'stack_mcc', 'video', 'training_curve']
 
 ENV_NAMES = {'MountainCarContinuous-v0': ['15000', '50000', '100000', '200000', '300000', '400000', '500000'],
              'InvertedPendulum-v2': ['50000', '100000', '200000', '300000', '400000'],
@@ -312,6 +312,20 @@ def record_video(env_name, agent, training_steps):
         video_recorder.save(f'{env_name}_{skill_idx}_{training_steps}.gif')
 
 
+def plot_training_curve(env_name):
+    TSBOARD_SMOOTHING = 0.95
+    for agent in ['random', 'diayn', 'diayn_vcl']:
+        df = pd.read_csv("{}_{}.csv".format(agent, env_name))
+        plt.plot(df["Step"], df.ewm(alpha=(1 - TSBOARD_SMOOTHING)).mean()["Value"], label=agent)
+        plt.grid(alpha=0.3)
+    plt.xlabel("training steps", fontsize=10)
+    plt.ylabel("rewards", fontsize=10)
+    plt.title("fine-tuning learning curve in {}".format(env_name), fontsize=15)
+    plt.legend()
+    plt.savefig(fname='results/' + 'fine-tuning_learning_curve-' + env_name  + '.png')
+    plt.show()
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode',
@@ -329,7 +343,7 @@ def parse_args():
                         default='100000')
     parser.add_argument('--agent',
                         type=str,
-                        default='')
+                        default='diayn')
     args = parser.parse_args()
     return args
 
@@ -346,6 +360,8 @@ def run_experiments(args):
         plot_stack_distribution_mcc(args.env_name, args.agent)
     elif mode == 'video':
         record_video(args.env_name, args.agent, args.training_steps)
+    elif mode == 'training_curve':
+        plot_training_curve(args.env_name)
 
 if __name__ == '__main__':
     args = parse_args()

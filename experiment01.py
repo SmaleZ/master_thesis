@@ -39,19 +39,8 @@ def parse_args():
     return args
 
 
-# env_names = ['InvertedPendulum-v2']
-# env = gym.make('MountainCarContinuous-v0')
-# env = gym.make('InvertedPendulum-v2')
 def train(num_skills, total_training_timestep, env_name):
-    # for env_name in env_names:
-    #     env = gym.make(env_name)
-    #     env = DIAYN_Skill_Wrapper(env, num_skills=num_skills)
-    #     # env = DummyVecEnv([lambda: env])
-    #     # normalized_vec_env = VecNormalize(env)
-    #     for total_training_timestep in total_training_timesteps:
-    #         agent = SAC("MlpPolicy", env, verbose=1, tensorboard_log="./tensorboard").learn(
-    #             total_timesteps=total_training_timestep)
-    #         agent.save("trainedmodel/{}-{}".format(env_name, total_training_timestep))
+
     env = gym.make(env_name)
     env = DIAYN_Skill_Wrapper(env, num_skills)
     agent = SAC("MlpPolicy", env, verbose=1, tensorboard_log="./tensorboard").learn(
@@ -112,35 +101,6 @@ def view(num_skills, env_name, agent_path):
         env.close()
 
 
-## run experiment:
-## fist step : train the model on two gym_env with different training scale
-# train(num_skills=num_skills, total_training_timesteps=total_training_timesteps, env_names=env_names)
-# train_vcl(num_skills=num_skills, total_training_timesteps=total_training_timesteps, env_names=env_names)
-# 2nd step : eval
-# for env_name in env_names:
-#     for total_training_timestep in total_training_timesteps:
-#         agent_path = "trainedmodel/{}-{}.zip".format(env_name, total_training_timestep)
-#         eval(num_skills, env_name, agent_path)
-
-# eval(num_skills=num_skills, env_name='InvertedPendulum-v2', agent_path='InvertedPendulum-v2-90000.zip')
-# eval(num_skills=num_skills, env_name='MountainCarContinuous-v0', agent_path='MountainCarContinuous-v0-90000.zip')
-# eval(num_skills=num_skills, env_name="BipedalWalker-v3", agent_path='BipedalWalker-v3-30000.zip')
-# model = SAC.load('trainedmodel/MountainCarContinuous-v0-100000.zip')
-# model = SAC.load('trainedmodel/DIAYN_VCL-MountainCarContinuous-v0-15000.zip')
-# for skill_idx in range(num_skills):
-#     print("choose skill : {}".format(skill_idx))
-#     env = gym.make('MountainCarContinuous-v0')
-#     env = DIAYN_Test_Wrapper(env, skill_idx=skill_idx)
-#     obs = env.reset()
-#     done = False
-#     action = env.action_space.sample()
-#     while not done:
-#         env.render(mode='human')
-#         obs, reward, done, _ = env.step(action)
-#         if done:
-#             break
-#         action, _state = model.predict(obs)
-#     env.close()
 def run_experiments(args):
     mode = args.mode
     if mode == 'train':
